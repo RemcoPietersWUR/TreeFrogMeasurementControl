@@ -1,7 +1,7 @@
 %TreeFrogMeasurementControl - TFMC
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %Properties
+%Properties
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%User defined properties
@@ -38,6 +38,20 @@ arduino.COM = 'COM7';
 %Motor connection
 motor.COM = 'COM9';
 
+%Angular position graph
+angular.plotTitle = 'Angular Position Log';
+angular.xLabel = 'Elapsed Time (s)';
+angular.yLabel = 'Angular Postion (deg)';
+angular.plotGrid = 'on';
+angular.ymin = 0;
+angular.ymax = 360;
+angular.scrollWidth = 10;
+
+%Angular position data
+angular.time = 0;
+angular.data = 0;
+angular.count = 0;
+
 %------------------------------------------------------------------------%
 
 %%Fixed properties
@@ -52,8 +66,16 @@ arduino.BaudRate = 9600;
 %Motor connection
 motor.BaudRate = 9600;
 
+%Measurement administration default selections
+meas.date = now;
+meas.species = 'Litoria caerulea';
+meas.individual = '1';
+meas.speed = '2 deg/sec';
+meas.roughness = 'Rough';
+meas.repetition = '1';
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %Connect Devices
+%Connect Devices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Connect webcams
@@ -70,15 +92,15 @@ disp('Connected')
 %Connect motor
 disp('Establish connection to motor...')
 motor_con = serial(motor.COM,'Baudrate',motor.BaudRate);
-fopen(motor_con);
+%fopen(motor_con);
 disp('Connected')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %Measurement Administration
+%Measurement Administration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[meas.species,meas.speed] = measurement_administration;
+[meas] = measurement_administration(meas);
 
 %Create folder to save data
 disp('Create folder structure to store data...')
@@ -86,8 +108,28 @@ disp('Create folder structure to store data...')
 %Add subfolders, webcam1, webcam2, TIRM
 
 disp('Done!')
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %Start measurement
+%Create graphs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Angular Position Graph
+
+%Set up Plot
+angular.plotGraph = plot(angular.time,angular.data,'-mo',...
+    'LineWidth',1,...
+    'MarkerEdgeColor','k',...
+    'MarkerFaceColor',[.49 1 .63],...
+    'MarkerSize',2);
+
+title(angular.plotTitle,'FontSize',25);
+xlabel(angular.xLabel,'FontSize',15);
+ylabel(angular.yLabel,'FontSize',15);
+axis([0 10 angular.ymin angular.ymax]);
+grid(angular.plotGrid);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Start measurement
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Start webcams & open viewers
@@ -100,11 +142,16 @@ custom_viewer(cam1);
 custom_viewer(cam2);
 
 %Read angular position
+tic
+angular_position = fscanf(arduino_con,'%f'); %Read Data from Serial as Float
+if(~isempty(angular_position) && isfloat(angular_position))
+    [angular]=update_angular_graph(angular_position,angular);
+end
 
 %Set motor speed
 disp(['Set angular velocity to ',meas.speed])
 speed ='/21S0010'; %Add conversion
-fprintf(motor_con,speed);
+%fprintf(motor_con,speed);
 
 
 
@@ -113,8 +160,8 @@ fprintf(motor_con,speed);
 soundsc(ones(1,audio.PulseWidth),audio.Fs);
 
 %Close all connections & windows
-fclose(arduino.COM)
-fclose(motor.COM)
+fclose(arduino_con);
+%fclose(motor_con);
 stoppreview(cam1)
 stoppreview(cam2)
 close all

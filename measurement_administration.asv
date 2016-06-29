@@ -1,5 +1,14 @@
 function [meas] = measurement_administration(meas)
 
+    %Default values
+    meas.date = now;
+    meas.species = 'Litoria caerulea';
+    meas.individual = '1';
+    meas.speed = '2 deg/sec';
+    meas.roughness = 'Rough';
+    meas.repetition = '1';
+    
+    
     d = dialog('Position',[300 300 500 300],'Name','Measurement administration');
     %[left bottom width height]
     current_date = uicontrol('Parent',d,...
@@ -85,18 +94,7 @@ function [meas] = measurement_administration(meas)
           % For R2014a and earlier:
           % idx = get(popup,'Value');
           % popup_items = get(popup,'String');
-          meas.species = char(popup_items(idx,:));
-       end
-   
-       function individual_callback(source,callbackdata)
-          idx = source.Value;
-          popup_items = source.String;
-          % This code uses dot notation to get properties.
-          % Dot notation runs in R2014b and later.
-          % For R2014a and earlier:
-          % idx = get(popup,'Value');
-          % popup_items = get(popup,'String');
-          meas.individual = char(popup_items(idx,:));
+          species = char(popup_items(idx,:));
        end
    
        function speed_callback(source,callbackdata)
@@ -107,28 +105,6 @@ function [meas] = measurement_administration(meas)
           % For R2014a and earlier:
           % idx = get(popup,'Value');
           % popup_items = get(popup,'String');
-          meas.speed = char(popup_items(idx,:));
-       end
-   
-       function roughness_callback(source,callbackdata)
-          idx = source.Value;
-          popup_items = source.String;
-          % This code uses dot notation to get properties.
-          % Dot notation runs in R2014b and later.
-          % For R2014a and earlier:
-          % idx = get(popup,'Value');
-          % popup_items = get(popup,'String');
-          meas.roughness = char(popup_items(idx,:));
-       end
-   
-       function repetition_callback(source,callbackdata)
-          idx = source.Value;
-          popup_items = source.String;
-          % This code uses dot notation to get properties.
-          % Dot notation runs in R2014b and later.
-          % For R2014a and earlier:
-          % idx = get(popup,'Value');
-          % popup_items = get(popup,'String');
-          meas.repetition = char(popup_items(idx,:));
+          speed = char(popup_items(idx,:));
        end
 end
