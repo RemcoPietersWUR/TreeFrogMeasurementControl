@@ -59,6 +59,9 @@ storage.subfolder.cam1 = 'webcam1';
 storage.subfolder.cam2 = 'webcam2';
 storage.subfolder.TIRM = 'TIRM';
 
+%Measurement settings
+meas.sampleangle = 2;
+
 %------------------------------------------------------------------------%
 
 %%Fixed properties
@@ -80,7 +83,11 @@ meas.individual = '01';
 meas.speed = '2 deg_sec';
 meas.roughness = 'Rough';
 meas.repetition = '01';
-meas.sampleangle = 2;
+meas.start_expermiment = now;
+meas.stop_expermiment = now;
+meas.bodyweight = 0;
+meas.humidity = 0;
+meas.temperature = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Connect Devices
@@ -216,6 +223,7 @@ stop_btn = uicontrol('Parent',stop_dialog,...
     'Position',[85 20 70 25],...
     'String','STOP',...
     'Callback','delete(gcf)');
+meas.start_expermiment = now;
 %Start timer
     tic;
 while ishandle(stop_dialog)
@@ -233,6 +241,7 @@ while ishandle(stop_dialog)
     mem_time(1,webcam.frame)=toc;
     pause(meas.sampleangle)
 end
+meas.stop_expermiment = now;
 
 %Save data
 disp('Saving Webcam Video...')
@@ -254,10 +263,22 @@ save(fullfile(storage.root,storage.measurementfolder,...
     'angular_position.mat'),'angular.time','angular.data')
 disp('Done!')
 
+%Store TIRM data
+uiwait(msgbox('Save TIRM data!','TIRM','modal'));
+winopen(fullfile(storage.root,storage.measurementfolder,...
+    storage.subfolder.TIRM))
 
 
+morp_param = inputdlg({'Enter body weight (g)','Enter humidity (%):','Enter temperature (Celcius)'},...
+    'Morphological parameters',1);
+meas.bodyweight = morp_param{1,1};
+meas.humidity = morp_param{1,2};
+meas.temperature = morp_param{1,3};
 
-
+disp('Saving measurement parameters...')
+save(fullfile(storage.root,storage.measurementfolder,...
+    'measurement_parameters.mat'),'meas')
+disp('Done!')
 
 %Close all connections & windows
 fclose(arduino_con);
