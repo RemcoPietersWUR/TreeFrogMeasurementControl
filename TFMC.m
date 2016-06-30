@@ -10,13 +10,13 @@
 %Settings webcam1
 webcam.set1.Resolution = 'MJPG_1920x1080';
 webcam.set1.ColorSpace = 'grayscale';
-webcam.set1.BacklightCompensation = 'on';
+webcam.set1.BacklightCompensation = 'off';
 webcam.set1.Brightness = 128;
 webcam.set1.Contrast = 128;
 webcam.set1.Exposure = -5;
-webcam.set1.ExposureMode = 'auto';
+webcam.set1.ExposureMode = 'manual';
 webcam.set1.Focus = 0;
-webcam.set1.FocusMode = 'auto';
+webcam.set1.FocusMode = 'manual';
 webcam.set1.FrameRate = '30.0000';
 webcam.set1.Gain = 0;
 webcam.set1.Pan = 0;
@@ -24,10 +24,11 @@ webcam.set1.Saturation = 128;
 webcam.set1.Sharpness = 128;
 webcam.set1.Tilt = 0;
 webcam.set1.WhiteBalance = 4000;
-webcam.set1.WhiteBalanceMode = 'auto';
+webcam.set1.WhiteBalanceMode = 'manual';
 webcam.set1.Zoom = 100;
 %Settings webcam2
 webcam.set2=webcam.set1;
+webcam.frame = 0;
 
 %Audio pulse
 audio.PulseWidth = 10; %milliseconds
@@ -79,6 +80,7 @@ meas.individual = '01';
 meas.speed = '2 deg_sec';
 meas.roughness = 'Rough';
 meas.repetition = '01';
+meas.sampleangle = 2;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Connect Devices
@@ -116,8 +118,9 @@ storage.measurementfolder = [datestr(meas.date,'yyyymmdd'),'_',...
     meas.speed,'_',meas.repetition];
 %Check if file already exist
 while isdir(fullfile(storage.root,storage.measurementfolder))
+    overwrite = false;
     % Construct a questdlg with three options
-    choice = questdlg('Would you like a dessert?', ...
+    choice = questdlg('Overwrite data?', ...
         'Overwrite data?', ...
         'Overwrite','Increment repetition','Increment repetition');
     % Handle response
@@ -175,28 +178,90 @@ disp('Webcams running')
 disp('Open viewer windows')
 custom_viewer(cam1);
 custom_viewer(cam2);
+viewer_handle = msgbox('Is the webcam view okay?', 'Webcam Okay?','help');
+uiwait(viewer_handle)
+closepreview(cam1)
+closepreview(cam2)
 
-%Read angular position
-tic
-angular_position = fscanf(arduino_con,'%f'); %Read Data from Serial as Float
-if(~isempty(angular_position) && isfloat(angular_position))
-    [angular]=update_angular_graph(angular_position,angular);
-end
+%Preallocate video memory
+disp('Allocate video memory...')
+videoRes1 = cam1.VideoResolution;
+mem_cam1 = uint8(zeros(videoRes1(2),videoRes1(1),ceil(360/meas.sampleangle)));
+videoRes2 = cam2.VideoResolution;
+mem_cam2 = uint8(zeros(videoRes2(2),videoRes2(1),ceil(360/meas.sampleangle)));
+disp('Done!')
+%Preallocate time memory
+mem_time = zeros(1,ceil(360/meas.sampleangle));
 
 %Set motor speed
 disp(['Set angular velocity to ',meas.speed])
 speed ='/21S0010'; %Add conversion
 %fprintf(motor_con,speed);
 
+%Start dialog window
+start_dialog = dialog('Position',[300 300 250 150],'Name','Start Measurement');
+start_btn = uicontrol('Parent',start_dialog,...
+    'Position',[85 20 70 25],...
+    'String','START',...
+    'Callback','delete(gcf)');
+uiwait(start_dialog);
+stop_dialog = dialog('Position',[300 300 250 150],'Name','Stop Measurement');
+
+stop_txt = uicontrol('Parent',stop_dialog,...
+    'Style','text',...
+    'Position',[20 80 210 40],...
+    'String','Click the STOP button when you''re done.');
+
+stop_btn = uicontrol('Parent',stop_dialog,...
+    'Position',[85 20 70 25],...
+    'String','STOP',...
+    'Callback','delete(gcf)');
+%Start timer
+    tic;
+while ishandle(stop_dialog)
+    %Read angular position
+    angular_position = fscanf(arduino_con,'%f'); %Read Data from Serial as Float
+    if(~isempty(angular_position) && isfloat(angular_position))
+        [angular]=update_angular_graph(angular_position,angular,toc);
+    end
+    %Generate audio pulse
+    soundsc(ones(1,audio.PulseWidth),audio.Fs);
+    %Get snapshot from webcams
+    webcam.frame=webcam.frame+1;
+    mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
+    mem_cam2(:,:,webcam.frame)=getsnapshot(cam2);
+    mem_time(1,webcam.frame)=toc;
+    pause(meas.sampleangle)
+end
+
+%Save data
+disp('Saving Webcam Video...')
+for frame = 1:webcam.frame
+    %Webcam1
+    imwrite(mem_cam1(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
+    storage.subfolder.cam1,['IMG_',sprintf('%03i',frame),'.tif']));
+    %Webcam2
+    imwrite(mem_cam2(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
+    storage.subfolder.cam2,['IMG_',sprintf('%03i',frame)]))
+end
+%Timestamp
+timestamp_webcam = mem_time;
+save(fullfile(storage.root,storage.measurementfolder,...
+    'timestamp_webcam.mat'),'timestamp_webcam')
+disp('Done!')
+disp('Saving angular position...')
+save(fullfile(storage.root,storage.measurementfolder,...
+    'angular_position.mat'),'angular.time','angular.data')
+disp('Done!')
 
 
 
-%Generate audio pulse
-soundsc(ones(1,audio.PulseWidth),audio.Fs);
+
+
 
 %Close all connections & windows
 fclose(arduino_con);
 %fclose(motor_con);
-stoppreview(cam1)
-stoppreview(cam2)
-close all
+stop(cam1)
+stop(cam2)
+
