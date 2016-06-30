@@ -52,6 +52,12 @@ angular.time = 0;
 angular.data = 0;
 angular.count = 0;
 
+%Data storage
+storage.root = 'D:\Anne';
+storage.subfolder.cam1 = 'webcam1';
+storage.subfolder.cam2 = 'webcam2';
+storage.subfolder.TIRM = 'TIRM';
+
 %------------------------------------------------------------------------%
 
 %%Fixed properties
@@ -69,10 +75,10 @@ motor.BaudRate = 9600;
 %Measurement administration default selections
 meas.date = now;
 meas.species = 'Litoria caerulea';
-meas.individual = '1';
-meas.speed = '2 deg/sec';
+meas.individual = '01';
+meas.speed = '2 deg_sec';
 meas.roughness = 'Rough';
-meas.repetition = '1';
+meas.repetition = '01';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Connect Devices
@@ -104,8 +110,37 @@ disp('Connected')
 
 %Create folder to save data
 disp('Create folder structure to store data...')
+%Measurement subfolder
+storage.measurementfolder = [datestr(meas.date,'yyyymmdd'),'_',...
+    meas.species,'_', meas.individual,'_',meas.roughness,'_',...
+    meas.speed,'_',meas.repetition];
+%Check if file already exist
+while isdir(fullfile(storage.root,storage.measurementfolder))
+    % Construct a questdlg with three options
+    choice = questdlg('Would you like a dessert?', ...
+        'Overwrite data?', ...
+        'Overwrite','Increment repetition','Increment repetition');
+    % Handle response
+    switch choice
+        case 'Overwrite'
+            overwrite = true;
+        case 'Increment repetition'
+            meas.repetition = sprintf('%02i',str2double(meas.repetition)+1);
+    end
+    if overwrite
+        break
+    end
+end
+%Make folder
+mkdir(fullfile(storage.root,storage.measurementfolder))
 
 %Add subfolders, webcam1, webcam2, TIRM
+mkdir(fullfile(storage.root,storage.measurementfolder,...
+    storage.subfolder.cam1));
+mkdir(fullfile(storage.root,storage.measurementfolder,...
+    storage.subfolder.cam2));
+mkdir(fullfile(storage.root,storage.measurementfolder,...
+    storage.subfolder.TIRM));
 
 disp('Done!')
 
