@@ -56,7 +56,7 @@ angular.data = 0;
 angular.count = 0;
 
 %Data storage
-storage.root = 'F:';
+storage.root = 'H:\Thesis\Data\Experiments\Pilot';
 storage.subfolder.cam1 = 'webcam1';
 storage.subfolder.cam2 = 'webcam2';
 storage.subfolder.TIRM = 'TIRM';
@@ -96,9 +96,9 @@ meas.temperature = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Connect webcams
-disp('Establish connection to webcam...')
-[cam1, cam2]=cam_connect(webcam.set1,webcam.set2);
-disp('Connected')
+% disp('Establish connection to webcam...')
+% [cam1, cam2]=cam_connect(webcam.set1,webcam.set2);
+% disp('Connected')
 
 %Connect Arduino
 disp('Establish connection to Arduino...')
@@ -180,25 +180,25 @@ grid(angular.plotGrid);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Start webcams & open viewers
-disp('Start webcams...')
-start(cam1);
-start(cam2);
-disp('Webcams running')
-disp('Open viewer windows')
-custom_viewer(cam1);
-custom_viewer(cam2);
-viewer_handle = msgbox('Is the webcam view okay?', 'Webcam Okay?','help');
-uiwait(viewer_handle)
-closepreview(cam1)
-closepreview(cam2)
+% disp('Start webcams...')
+% start(cam1);
+% start(cam2);
+% disp('Webcams running')
+% disp('Open viewer windows')
+% custom_viewer(cam1);
+% custom_viewer(cam2);
+% viewer_handle = msgbox('Is the webcam view okay?', 'Webcam Okay?','help');
+% uiwait(viewer_handle)
+% closepreview(cam1)
+% closepreview(cam2)
 
 %Preallocate video memory
-disp('Allocate video memory...')
-videoRes1 = cam1.VideoResolution;
-mem_cam1 = uint8(zeros(videoRes1(2),videoRes1(1),ceil(360/meas.sampleangle)));
-videoRes2 = cam2.VideoResolution;
-mem_cam2 = uint8(zeros(videoRes2(2),videoRes2(1),ceil(360/meas.sampleangle)));
-disp('Done!')
+% disp('Allocate video memory...')
+% videoRes1 = cam1.VideoResolution;
+% mem_cam1 = uint8(zeros(videoRes1(2),videoRes1(1),ceil(360/meas.sampleangle)));
+% videoRes2 = cam2.VideoResolution;
+% mem_cam2 = uint8(zeros(videoRes2(2),videoRes2(1),ceil(360/meas.sampleangle)));
+% disp('Done!')
 %Preallocate time memory
 mem_time = zeros(1,ceil(360/meas.sampleangle));
 
@@ -244,9 +244,9 @@ while ishandle(stop_dialog)
     %Generate audio pulse
     soundsc(ones(1,audio.PulseWidth),audio.Fs);
     %Get snapshot from webcams
-    webcam.frame=webcam.frame+1;
-    mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
-    mem_cam2(:,:,webcam.frame)=getsnapshot(cam2);
+     webcam.frame=webcam.frame+1;
+%     mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
+%     mem_cam2(:,:,webcam.frame)=getsnapshot(cam2);
     mem_time(1,webcam.frame)=toc;
     pause(meas.sampleangle)
 end
@@ -255,12 +255,12 @@ meas.stop_expermiment = now;
 %Save data
 disp('Saving Webcam Video...')
 for frame = 1:webcam.frame
-    %Webcam1
-    imwrite(mem_cam1(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
-    storage.subfolder.cam1,['IMG_',sprintf('%03i',frame),'.tif']));
-    %Webcam2
-    imwrite(mem_cam2(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
-    storage.subfolder.cam2,['IMG_',sprintf('%03i',frame)]))
+%     %Webcam1
+%     imwrite(mem_cam1(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
+%     storage.subfolder.cam1,['IMG_',sprintf('%03i',frame),'.tif']));
+%     %Webcam2
+%     imwrite(mem_cam2(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
+%     storage.subfolder.cam2,['IMG_',sprintf('%03i',frame)]))
 end
 %Timestamp
 timestamp_webcam = mem_time;
@@ -268,8 +268,10 @@ save(fullfile(storage.root,storage.measurementfolder,...
     'timestamp_webcam.mat'),'timestamp_webcam')
 disp('Done!')
 disp('Saving angular position...')
+angular_time = angular.time;
+angular_data = angular.data;
 save(fullfile(storage.root,storage.measurementfolder,...
-    'angular_position.mat'),'angular.time','angular.data')
+    'angular_position.mat'),'angular_time','angular_data')
 disp('Done!')
 
 %Store TIRM data
@@ -281,8 +283,8 @@ winopen(fullfile(storage.root,storage.measurementfolder,...
 morp_param = inputdlg({'Enter body weight (g)','Enter humidity (%):','Enter temperature (Celcius)'},...
     'Morphological parameters',1);
 meas.bodyweight = morp_param{1,1};
-meas.humidity = morp_param{1,2};
-meas.temperature = morp_param{1,3};
+meas.humidity = morp_param{2,1};
+meas.temperature = morp_param{3,1};
 
 disp('Saving measurement parameters...')
 save(fullfile(storage.root,storage.measurementfolder,...
@@ -292,6 +294,6 @@ disp('Done!')
 %Close all connections & windows
 fclose(arduino_con);
 %fclose(motor_con);
-stop(cam1)
-stop(cam2)
+% stop(cam1)
+% stop(cam2)
 
