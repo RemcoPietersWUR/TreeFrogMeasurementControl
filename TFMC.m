@@ -38,6 +38,8 @@ arduino.COM = 'COM7';
 
 %Motor connection
 motor.COM = 'COM9';
+motor.speed.slope = 28.08107;
+motor.speed.intercept = -7.15028;
 
 %Angular position graph
 angular.plotTitle = 'Angular Position Log';
@@ -202,8 +204,15 @@ mem_time = zeros(1,ceil(360/meas.sampleangle));
 
 %Set motor speed
 disp(['Set angular velocity to ',meas.speed])
+%Set motor speed
+disp(['Set angular velocity to ',meas.speed])
+str_speed_idx = find(isstrprop(meas.speed,'digit'));
+num_speed = str2double(meas.speed(min(str_speed_idx):max(str_speed_idx)));
+speed_value = round(motor.speed.slope*num_speed+motor.speed.intercept);
 speed ='/21S0010'; %Add conversion
-%fprintf(motor_con,speed);
+fprintf(motor_con,['/21S',sprintf('%04i',speed_value)]);
+disp(['/21S',sprintf('%04i',speed_value)]);
+
 
 %Start dialog window
 start_dialog = dialog('Position',[300 300 250 150],'Name','Start Measurement');
