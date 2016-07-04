@@ -34,7 +34,7 @@ webcam.frame = 0;
 audio.PulseWidth = 10; %milliseconds
 
 %Arduino connection
-arduino.COM = 'COM7';
+arduino.COM = 'COM3';
 
 %Motor connection
 motor.COM = 'COM9';
@@ -56,7 +56,7 @@ angular.data = 0;
 angular.count = 0;
 
 %Data storage
-storage.root = 'D:\Anne';
+storage.root = 'F:';
 storage.subfolder.cam1 = 'webcam1';
 storage.subfolder.cam2 = 'webcam2';
 storage.subfolder.TIRM = 'TIRM';
@@ -81,7 +81,7 @@ motor.BaudRate = 9600;
 %Measurement administration default selections
 meas.date = now;
 meas.species = 'Litoria caerulea';
-meas.individual = '01';
+meas.individual = '00';
 meas.speed = '2 deg_sec';
 meas.roughness = 'Rough';
 meas.repetition = '01';
@@ -210,7 +210,7 @@ str_speed_idx = find(isstrprop(meas.speed,'digit'));
 num_speed = str2double(meas.speed(min(str_speed_idx):max(str_speed_idx)));
 speed_value = round(motor.speed.slope*num_speed+motor.speed.intercept);
 speed ='/21S0010'; %Add conversion
-fprintf(motor_con,['/21S',sprintf('%04i',speed_value)]);
+%fprintf(motor_con,['/21S',sprintf('%04i',speed_value)]);
 disp(['/21S',sprintf('%04i',speed_value)]);
 
 
