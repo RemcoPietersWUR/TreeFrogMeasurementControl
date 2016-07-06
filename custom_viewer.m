@@ -1,4 +1,4 @@
-function custom_viewer(cam)
+function [hFig]=custom_viewer(cam)
 %custom_viewer Create GUI for camera preview
 
 %Create figure handle
