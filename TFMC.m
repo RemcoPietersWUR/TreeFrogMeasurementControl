@@ -34,7 +34,7 @@ webcam.frame = 0;
 audio.PulseWidth = 10; %milliseconds
 
 %Arduino connection
-arduino.COM = 'COM3';
+arduino.COM = 'COM6';
 
 %Motor connection
 motor.COM = 'COM9';
@@ -56,7 +56,7 @@ angular.data = 0;
 angular.count = 0;
 
 %Data storage
-storage.root = 'H:\Thesis\Data\Experiments\Pilot';
+storage.root = 'G:\Thesis\Data\Experiments\Pilot';
 storage.subfolder.cam1 = 'webcam1';
 storage.subfolder.cam2 = 'webcam2';
 storage.subfolder.TIRM = 'TIRM';
