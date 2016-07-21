@@ -81,10 +81,10 @@ motor.BaudRate = 9600;
 %Measurement administration default selections
 meas.date = now;
 meas.species = 'Litoria caerulea';
-meas.individual = '00';
+meas.individual = '01';
 meas.speed = '2 deg_sec';
 meas.roughness = 'Rough';
-meas.repetition = '01';
+meas.repetition = '00';
 meas.start_expermiment = now;
 meas.stop_expermiment = now;
 meas.bodyweight = 0;
@@ -238,19 +238,25 @@ flushinput(arduino_con)
 %Start timer
     tic;
 while ishandle(stop_dialog)
+    index = 1;
     %Read angular position
+    tic;
     flushinput(arduino_con)
     angular_position = fscanf(arduino_con,'%f'); %Read Data from Serial as Float
+    time(index,1) = toc;
     if(~isempty(angular_position) && isfloat(angular_position))
         [angular]=update_angular_graph(angular_position,angular,toc);
     end
     %Generate audio pulse
+    tic;
     soundsc(ones(1,audio.PulseWidth),audio.Fs);
+    time(index,2) = toc;
     %Get snapshot from webcams
      webcam.frame=webcam.frame+1;
      %mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
      %mem_cam2(:,:,webcam.frame)=getsnapshot(cam2);
     mem_time(1,webcam.frame)=toc;
+    index = index + 1;
     pause(meas.sampleangle)
 end
 meas.stop_expermiment = now;
