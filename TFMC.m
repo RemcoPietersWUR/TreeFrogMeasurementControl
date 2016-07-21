@@ -212,8 +212,10 @@ num_speed = str2double(meas.speed(min(str_speed_idx):max(str_speed_idx)));
 speed_value = round(motor.speed.slope*num_speed+motor.speed.intercept);
 speed ='/21S0010'; %Add conversion
 fprintf(motor_con,['/21S',sprintf('%04i',speed_value)]);
-% fprintf(motor_con,'/21R0001');
 disp(['/21S',sprintf('%04i',speed_value)]);
+
+% 
+% fprintf(s,'/21R0001');
 
 
 %Start dialog window
@@ -244,14 +246,14 @@ while ishandle(stop_dialog)
     tic;
     flushinput(arduino_con)
     angular_position = fscanf(arduino_con,'%f'); %Read Data from Serial as Float
-    time(index,1) = toc;
+    time(index,1) = toc
     if(~isempty(angular_position) && isfloat(angular_position))
         [angular]=update_angular_graph(angular_position,angular,toc);
     end
     %Generate audio pulse
     tic;
     soundsc(ones(1,audio.PulseWidth),audio.Fs);
-    time(index,2) = toc;
+    time(index,2) = toc
     %Get snapshot from webcams
      webcam.frame=webcam.frame+1;
      %mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
@@ -261,9 +263,9 @@ while ishandle(stop_dialog)
     pause(meas.sampleangle)
 end
 meas.stop_expermiment = now;
-% fprintf(motor_con,'/21R0000'); stop
-% % pause(3*(meas.sampleangle))
-% fprintf(motor_con,'/21R0002'); home
+fprintf(motor_con,'/21R0000'); %stop
+pause(3*(meas.sampleangle))
+fprintf(motor_con,'/21R0002'); %home
 
 %Save data
 % disp('Saving Webcam Video...')
