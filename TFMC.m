@@ -212,6 +212,7 @@ num_speed = str2double(meas.speed(min(str_speed_idx):max(str_speed_idx)));
 speed_value = round(motor.speed.slope*num_speed+motor.speed.intercept);
 speed ='/21S0010'; %Add conversion
 fprintf(motor_con,['/21S',sprintf('%04i',speed_value)]);
+% fprintf(motor_con,'/21R0001');
 disp(['/21S',sprintf('%04i',speed_value)]);
 
 
@@ -260,6 +261,9 @@ while ishandle(stop_dialog)
     pause(meas.sampleangle)
 end
 meas.stop_expermiment = now;
+% fprintf(motor_con,'/21R0000'); stop
+% % pause(3*(meas.sampleangle))
+% fprintf(motor_con,'/21R0002'); home
 
 %Save data
 % disp('Saving Webcam Video...')
