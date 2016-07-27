@@ -56,7 +56,7 @@ angular.data = 0;
 angular.count = 0;
 
 %Data storage
-storage.root = 'G:\Thesis\Data\Experiments\Pilot';
+storage.root = 'G:\Thesis\Data\Experiments\Pilot\test 27-7';
 storage.subfolder.cam1 = 'webcam1';
 storage.subfolder.cam2 = 'webcam2';
 storage.subfolder.TIRM = 'TIRM';
@@ -215,7 +215,6 @@ fprintf(motor_con,['/21S',sprintf('%04i',speed_value)]);
 disp(['/21S',sprintf('%04i',speed_value)]);
 
 % 
-% fprintf(s,'/21R0001');
 
 
 %Start dialog window
@@ -225,6 +224,7 @@ start_btn = uicontrol('Parent',start_dialog,...
     'String','START',...
     'Callback','delete(gcf)');
 uiwait(start_dialog);
+
 stop_dialog = dialog('Position',[300 300 250 150],'Name','Stop Measurement');
 
 stop_txt = uicontrol('Parent',stop_dialog,...
@@ -236,35 +236,41 @@ stop_btn = uicontrol('Parent',stop_dialog,...
     'Position',[85 20 70 25],...
     'String','STOP',...
     'Callback','delete(gcf)');
+
+fprintf(motor_con,'/21R0001');
 meas.start_expermiment = now;
 flushinput(arduino_con)
 %Start timer
-    tic;
-while ishandle(stop_dialog)
+   tic;
+    timeSuc(1:100) = NaN;
     index = 1;
+    
+    while ishandle(stop_dialog)
     %Read angular position
-    tic;
     flushinput(arduino_con)
+    fscanf(arduino_con,'%f');
     angular_position = fscanf(arduino_con,'%f'); %Read Data from Serial as Float
-    time(index,1) = toc
     if(~isempty(angular_position) && isfloat(angular_position))
         [angular]=update_angular_graph(angular_position,angular,toc);
+        timeSuc(index) = toc;
+%     display (angular_position)
+%     display (~isempty(angular_position))
+%     display (isfloat(angular_position))
     end
     %Generate audio pulse
-    tic;
     soundsc(ones(1,audio.PulseWidth),audio.Fs);
-    time(index,2) = toc
     %Get snapshot from webcams
      webcam.frame=webcam.frame+1;
      %mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
      %mem_cam2(:,:,webcam.frame)=getsnapshot(cam2);
     mem_time(1,webcam.frame)=toc;
-    index = index + 1;
     pause(meas.sampleangle)
-end
+    index=index+1;
+    end
+
 meas.stop_expermiment = now;
 fprintf(motor_con,'/21R0000'); %stop
-pause(3*(meas.sampleangle))
+pause(6)
 fprintf(motor_con,'/21R0002'); %home
 
 %Save data
