@@ -58,7 +58,7 @@ angular.count = 0;
 %Data storage
 storage.root = 'G:\Thesis\Data\Experiments\Pilot\test 27-7';
 storage.subfolder.cam1 = 'webcam1';
-storage.subfolder.cam2 = 'webcam2';
+%storage.subfolder.cam2 = 'webcam2';
 storage.subfolder.TIRM = 'TIRM';
 
 %Measurement settings
@@ -96,9 +96,9 @@ meas.temperature = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Connect webcams
-% disp('Establish connection to webcam...')
-% [cam1, cam2]=cam_connect(webcam.set1,webcam.set2);
-% disp('Connected')
+disp('Establish connection to webcam...')
+[cam1]=cam_connect(webcam.set1);
+disp('Connected')
 
 %Connect Arduino
 disp('Establish connection to Arduino...')
@@ -149,8 +149,8 @@ mkdir(fullfile(storage.root,storage.measurementfolder))
 %Add subfolders, webcam1, webcam2, TIRM
 mkdir(fullfile(storage.root,storage.measurementfolder,...
     storage.subfolder.cam1));
-mkdir(fullfile(storage.root,storage.measurementfolder,...
-    storage.subfolder.cam2));
+%mkdir(fullfile(storage.root,storage.measurementfolder,...
+    %storage.subfolder.cam2));
 mkdir(fullfile(storage.root,storage.measurementfolder,...
     storage.subfolder.TIRM));
 
@@ -180,28 +180,28 @@ grid(angular.plotGrid);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Start webcams & open viewers
-% disp('Start webcams...')
-% start(cam1);
+disp('Start webcam...')
+start(cam1);
 % start(cam2);
-% disp('Webcams running')
-% disp('Open viewer windows')
-% cam1Fig=custom_viewer(cam1);
+disp('Webcam running')
+disp('Open viewer window')
+cam1Fig=custom_viewer(cam1);
 % cam2Fig=custom_viewer(cam2);
-% viewer_handle = msgbox('Is the webcam view okay?', 'Webcam Okay?','help');
-% uiwait(viewer_handle)
-% closepreview(cam1)
+viewer_handle = msgbox('Is the webcam view okay?', 'Webcam Okay?','help');
+uiwait(viewer_handle)
+closepreview(cam1)
 % closepreview(cam2)
-% close(cam1Fig);
+close(cam1Fig);
 % close(cam2Fig);
 
 
 %Preallocate video memory
-% disp('Allocate video memory...')
-% videoRes1 = cam1.VideoResolution;
-% mem_cam1 = uint8(zeros(videoRes1(2),videoRes1(1),ceil(360/meas.sampleangle)));
+disp('Allocate video memory...')
+videoRes1 = cam1.VideoResolution;
+mem_cam1 = uint8(zeros(videoRes1(2),videoRes1(1),ceil(360/meas.sampleangle)));
 % videoRes2 = cam2.VideoResolution;
 % mem_cam2 = uint8(zeros(videoRes2(2),videoRes2(1),ceil(360/meas.sampleangle)));
-% disp('Done!')
+disp('Done!')
 %Preallocate time memory
 mem_time = zeros(1,ceil(360/meas.sampleangle));
 
@@ -260,9 +260,9 @@ flushinput(arduino_con)
     %Generate audio pulse
     soundsc(ones(1,audio.PulseWidth),audio.Fs);
     %Get snapshot from webcams
-     webcam.frame=webcam.frame+1;
-     %mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
-     %mem_cam2(:,:,webcam.frame)=getsnapshot(cam2);
+    webcam.frame=webcam.frame+1;
+    mem_cam1(:,:,webcam.frame)=getsnapshot(cam1);
+    %mem_cam2(:,:,webcam.frame)=getsnapshot(cam2);
     mem_time(1,webcam.frame)=toc;
     pause(meas.sampleangle)
     index=index+1;
@@ -274,15 +274,15 @@ pause(6)
 fprintf(motor_con,'/21R0002'); %home
 
 %Save data
-% disp('Saving Webcam Video...')
-% for frame = 1:webcam.frame
-%      %Webcam1
-%      imwrite(mem_cam1(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
-%      storage.subfolder.cam1,['IMG_',sprintf('%03i',frame),'.tif']));
+disp('Saving Webcam Video...')
+for frame = 1:webcam.frame
+      %Webcam1
+      imwrite(mem_cam1(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
+      storage.subfolder.cam1,['IMG_',sprintf('%03i',frame),'.tif']));
 %      %Webcam2
 %      imwrite(mem_cam2(:,:,frame),fullfile(storage.root,storage.measurementfolder,...
 %      storage.subfolder.cam2,['IMG_',sprintf('%03i',frame),'.tif']));
-% end
+end
 %Timestamp
 timestamp_webcam = mem_time;
 save(fullfile(storage.root,storage.measurementfolder,...
@@ -315,7 +315,7 @@ disp('Done!')
 %Close all connections & windows
 fclose(arduino_con);
 fclose(motor_con);
-%stop(cam1)
+stop(cam1)
 %stop(cam2)
 close all
 

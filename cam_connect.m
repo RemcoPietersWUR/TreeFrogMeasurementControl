@@ -1,4 +1,4 @@
-function [cam1, cam2]=cam_connect(set1,set2)
+function [cam1]=cam_connect(set1)
 %cam_connect Establish connection with cameras connected to the PC. Set
 %device properties, e.g. resolution, colorspace, auto control....
 
@@ -7,8 +7,8 @@ function [cam1, cam2]=cam_connect(set1,set2)
 
 %Identify available devices supported by the generic video driver
 hwInfo = imaqhwinfo('winvideo');
-if numel(hwInfo.DeviceIDs)~=2
-   error('Webcams not avialable!')
+if numel(hwInfo.DeviceIDs)~=1 %2
+   error('Webcam1 not avialable!')
 end
 
 
@@ -33,26 +33,26 @@ src1.WhiteBalance = set1.WhiteBalance;
 src1.WhiteBalanceMode = set1.WhiteBalanceMode;
 src1.Zoom = set1.Zoom;
 
-cam2 = videoinput('winvideo', 2,set2.Resolution,...
-    'ReturnedColorSpace',set2.ColorSpace,'FramesPerTrigger',1);
-src2 = getselectedsource(cam2);
-src2.BacklightCompensation = set2.BacklightCompensation;
-src2.Brightness = set2.Brightness;
-src2.Contrast = set2.Contrast;
-src2.Exposure = set2.Exposure;
-src2.ExposureMode = set2.ExposureMode;
-src2.Focus = set2.Focus;
-src2.FocusMode = set2.FocusMode;
-src2.FrameRate = set2.FrameRate;
-src2.Gain = set2.Gain;
-src2.Pan = set2.Pan;
-src2.Saturation = set2.Saturation;
-src2.Sharpness = set2.Sharpness;
-src2.Tilt = set2.Tilt;
-src2.WhiteBalance = set2.WhiteBalance;
-src2.WhiteBalanceMode = set2.WhiteBalanceMode;
-src2.Zoom = set2.Zoom;
+% cam2 = videoinput('winvideo', 2,set2.Resolution,...
+%     'ReturnedColorSpace',set2.ColorSpace,'FramesPerTrigger',1);
+% src2 = getselectedsource(cam2);
+% src2.BacklightCompensation = set2.BacklightCompensation;
+% src2.Brightness = set2.Brightness;
+% src2.Contrast = set2.Contrast;
+% src2.Exposure = set2.Exposure;
+% src2.ExposureMode = set2.ExposureMode;
+% src2.Focus = set2.Focus;
+% src2.FocusMode = set2.FocusMode;
+% src2.FrameRate = set2.FrameRate;
+% src2.Gain = set2.Gain;
+% src2.Pan = set2.Pan;
+% src2.Saturation = set2.Saturation;
+% src2.Sharpness = set2.Sharpness;
+% src2.Tilt = set2.Tilt;
+% src2.WhiteBalance = set2.WhiteBalance;
+% src2.WhiteBalanceMode = set2.WhiteBalanceMode;
+% src2.Zoom = set2.Zoom;
 
 %Trigger setting to manual
 triggerconfig(cam1, 'manual');
-triggerconfig(cam2, 'manual');
+%triggerconfig(cam2, 'manual');
