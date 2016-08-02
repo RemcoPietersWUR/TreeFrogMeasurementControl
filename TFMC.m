@@ -56,7 +56,7 @@ angular.data = 0;
 angular.count = 0;
 
 %Data storage
-storage.root = 'G:\Thesis\Data\Experiments\Pilot\test 27-7';
+storage.root = 'G:\Thesis\Data\Experiments\Real';
 storage.subfolder.cam1 = 'webcam1';
 %storage.subfolder.cam2 = 'webcam2';
 storage.subfolder.TIRM = 'TIRM';
